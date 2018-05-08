@@ -1,0 +1,91 @@
+version: '3.3'
+
+services:
+
+  epl-discovery-service:
+    image: epl-discovery-service-image:latest
+    container_name: epl-discovery-service
+    build: ./epl-discovery-service
+    ports:
+      - 8061:8061
+    restart:
+      unless-stopped
+    networks:
+      - epl-microservice
+
+  epl-employee-service:
+    image: epl-employee-service-image:latest
+    container_name: epl-employee-service
+    build: ./epl-employee-service
+    environment:
+      - REGISTRY_HOST=epl-discovery-service
+    ports:
+      - 8090:8090
+    links:
+      - epl-discovery-service    
+    depends_on:
+      - epl-discovery-service
+    restart:
+      unless-stopped
+    networks:
+      - epl-microservice
+
+  epl-department-service:
+    image: epl-department-service-image:latest
+    container_name: epl-department-service
+    build: ./epl-department-service
+    environment:
+      - REGISTRY_HOST=epl-discovery-service
+    ports:
+      - 8091:8091
+    links:
+      - epl-discovery-service
+    depends_on:
+      - epl-discovery-service
+    restart:
+      unless-stopped
+    networks:
+      - epl-microservice
+
+#  epl-organization-service:
+#    image: epl-organization-service-image:latest
+#    container_name: epl-organization-service
+#    build: ./epl-organization-service
+#    ports:
+#      - 8092:8092
+#    environment:
+#      - REGISTRY_HOST=epl-discovery-service
+#    links:
+#      - epl-discovery-service  
+#    depends_on:
+#      - epl-discovery-service
+#    restart:
+#      unless-stopped
+#    networks:
+#      - epl-microservice
+
+  epl-proxy-service:
+    image: epl-proxy-service-image:latest
+    container_name: epl-proxy-service
+    build: ./epl-gateway-service
+    ports:
+      - 8060:8060
+    environment:
+      - REGISTRY_HOST=epl-discovery-service
+    links:
+      - epl-discovery-service
+      - epl-employee-service
+      - epl-department-service
+#      - epl-organization-service  
+    depends_on:
+      - epl-discovery-service
+      - epl-employee-service
+      - epl-department-service
+#      - epl-organization-service
+    restart:
+      unless-stopped
+    networks:
+      - epl-microservice
+
+networks:
+  epl-microservice:

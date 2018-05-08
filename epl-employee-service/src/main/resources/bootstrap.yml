@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: epl-employee-service
+  cloud:
+    config:
+      uri: http://172.17.0.1:8088
+
